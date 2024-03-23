@@ -3,6 +3,6 @@ from infra.services.aws_lambda import AWSLambda
 
 
 class Services:
-    def __init__(self, scope, stage, arns) -> None:
-        self.api_gateway = APIGateway(scope, stage)
-        self.aws_lambda = AWSLambda(scope, stage)
+    def __init__(self, scope, context) -> None:
+        self.api_gateway = APIGateway(scope, context)
+        self.aws_lambda = AWSLambda(scope, context)

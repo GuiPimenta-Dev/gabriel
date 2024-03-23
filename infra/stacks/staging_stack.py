@@ -1,20 +1,17 @@
-
 import aws_cdk as cdk
 from aws_cdk import pipelines as pipelines
 from aws_cdk.pipelines import CodePipelineSource
 from constructs import Construct
 
 from infra.stages.deploy import DeployStage
-from infra.steps.code_build_step import CodeBuildStep
+from lambda_forge import context, Steps
 
-
+@context(stage="Staging", resources="staging")
 class StagingStack(cdk.Stack):
-    def __init__(self, scope: Construct, **kwargs) -> None:
-        name = scope.node.try_get_context("name").title()
-        super().__init__(scope, f"Staging-{name}-Stack", **kwargs)
-
-        repo = self.node.try_get_context("repo")
-        source = CodePipelineSource.git_hub(f"{repo['owner']}/{repo['name']}", "staging")
+    def __init__(self, scope: Construct, context, **kwargs) -> None:
+        super().__init__(scope, f"{context.stage}-{context.name}-Stack", **kwargs)
+        
+        source = CodePipelineSource.git_hub(f"{context.repo['owner']}/{context.repo['name']}", "staging")
 
         pipeline = pipelines.CodePipeline(
             self,
@@ -23,6 +20,7 @@ class StagingStack(cdk.Stack):
                 "Synth",
                 input=source,
                 install_commands=[
+                    "pip install lambda-forge --extra-index-url https://pypi.org/simple --extra-index-url https://test.pypi.org/simple/",
                     "pip install aws-cdk-lib",
                     "npm install -g aws-cdk",
                 ],
@@ -30,26 +28,23 @@ class StagingStack(cdk.Stack):
                     "cdk synth",
                 ],
             ),
-            pipeline_name=f"Staging-{name}-Pipeline",
+            pipeline_name=f"{context.stage}-{context.name}-Pipeline",
         )
 
-        context = self.node.try_get_context("staging")
-        stage = "Staging"
-
-        code_build = CodeBuildStep(self, stage, source)
+        steps = Steps(self, context, source)
 
         # pre
-        unit_tests = code_build.run_unit_tests()
-        coverage = code_build.run_coverage()
-        validate_docs = code_build.validate_docs()
-        validate_integration_tests = code_build.validate_integration_tests()
+        unit_tests = steps.run_unit_tests()
+        coverage = steps.run_coverage()
+        validate_docs = steps.validate_docs()
+        validate_integration_tests = steps.validate_integration_tests()
 
         # post
-        generate_docs = code_build.generate_docs(name, stage)
-        integration_tests = code_build.run_integration_tests()
+        generate_docs = steps.generate_docs()
+        integration_tests = steps.run_integration_tests()
 
         pipeline.add_stage(
-            DeployStage(self, stage, context["arns"]),
+            DeployStage(self, context),
             pre=[
                 unit_tests,
                 coverage,

@@ -4,15 +4,14 @@ from aws_cdk import pipelines as pipelines
 from aws_cdk.pipelines import CodePipelineSource
 from constructs import Construct
 from infra.stages.deploy import DeployStage
+from lambda_forge import context
 
-
+@context(stage="Dev", resources="dev")
 class DevStack(cdk.Stack):
-    def __init__(self, scope: Construct, **kwargs) -> None:
-        name = scope.node.try_get_context("name").title()
-        super().__init__(scope, f"Dev-{name}-Stack", **kwargs)
+    def __init__(self, scope: Construct, context, **kwargs) -> None:
+        super().__init__(scope, f"{context.stage}-{context.name}-Stack", **kwargs)
 
-        repo = self.node.try_get_context("repo")
-        source = CodePipelineSource.git_hub(f"{repo['owner']}/{repo['name']}", "dev")
+        source = CodePipelineSource.git_hub(f"{context.repo['owner']}/{context.repo['name']}", "dev")
 
         pipeline = pipelines.CodePipeline(
             self,
@@ -21,6 +20,7 @@ class DevStack(cdk.Stack):
                 "Synth",
                 input=source,
                 install_commands=[
+                    "pip install lambda-forge --extra-index-url https://pypi.org/simple --extra-index-url https://test.pypi.org/simple/",
                     "pip install aws-cdk-lib",
                     "npm install -g aws-cdk",
                 ],
@@ -28,10 +28,8 @@ class DevStack(cdk.Stack):
                     "cdk synth",
                 ],
             ),
-            pipeline_name=f"Dev-{name}-Pipeline",
+            pipeline_name=f"{context.stage}-{context.name}-Pipeline",
         )
 
-        context = self.node.try_get_context("dev")
-        stage = "Dev"
 
-        pipeline.add_stage(DeployStage(self, stage, context["arns"]))
+        pipeline.add_stage(DeployStage(self, context))

@@ -4,7 +4,7 @@ def test_authorizer_should_pass_with_correct_secret():
 
     event = {
         "headers": {
-            "secret": "sGWU7nfWiyrnRXNaao4mqljT20F3C1x423Rc1xxO01pX1WZ9pZhE"
+            "secret": "3ryuGyjO605vGWdBmhi6Pf6csTZcOBEbcFGZuaYlAmREhhQb0Whw"
         }
     }
     response = lambda_handler(event, None)

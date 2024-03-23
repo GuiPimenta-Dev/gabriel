@@ -5,7 +5,9 @@ from infra.stacks.lambda_stack import LambdaStack
 
 
 class DeployStage(cdk.Stage):
-    def __init__(self, scope: Construct, stage: str, arns, **kwargs):
-        super().__init__(scope, stage, **kwargs)
+    def __init__(self, scope: Construct, context, **kwargs):
+        super().__init__(scope, context.stage, **kwargs)
 
-        LambdaStack(self, stage, arns)
+        lambda_stack = LambdaStack(self, context)
+        
+        lambda_stack.services.api_gateway.create_docs(enabled=True, authorizer="docs")

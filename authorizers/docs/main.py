@@ -6,14 +6,14 @@ def lambda_handler(event, context):
     # To utilize the example authorizer as a temporary placeholder, ensure to include the following header in your requests:
 
     # Header:
-    # secret: sGWU7nfWiyrnRXNaao4mqljT20F3C1x423Rc1xxO01pX1WZ9pZhE
+    # secret: 3ryuGyjO605vGWdBmhi6Pf6csTZcOBEbcFGZuaYlAmREhhQb0Whw
 
     # Remember, security is paramount. This placeholder serves as a guide to help you understand the kind of information your custom authorizer should authenticate. 
     # Please replace it with your secure, proprietary logic before going live. Happy coding!
 
     secret = event["headers"].get("secret")
 
-    SECRET = "sGWU7nfWiyrnRXNaao4mqljT20F3C1x423Rc1xxO01pX1WZ9pZhE"
+    SECRET = "3ryuGyjO605vGWdBmhi6Pf6csTZcOBEbcFGZuaYlAmREhhQb0Whw"
     effect = "allow" if secret == SECRET else "deny"
 
     policy = {
