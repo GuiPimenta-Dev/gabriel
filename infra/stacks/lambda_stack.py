@@ -1,3 +1,4 @@
+from authorizers.jwt.config import JwtAuthorizerConfig
 from functions.hello_world.config import HelloWorldConfig
 from authorizers.docs.config import DocsAuthorizerConfig
 from aws_cdk import Stack
@@ -15,6 +16,7 @@ class LambdaStack(Stack):
         self.services = Services(self, context)
 
         # Authorizers
+        JwtAuthorizerConfig(self.services)
         DocsAuthorizerConfig(self.services)
 
         # HelloWorld
