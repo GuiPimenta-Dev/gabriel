@@ -10,6 +10,6 @@ class HelloWorldConfig:
             
         )
 
-        services.api_gateway.create_endpoint("GET", "/hello_world", function, public=True)
+        services.api_gateway.create_endpoint("GET", "/hello_world", function, authorizer="jwt")
 
             
